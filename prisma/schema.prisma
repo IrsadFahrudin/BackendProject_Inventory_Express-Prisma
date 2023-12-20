@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = "mysql://root@localhost:3306/db_suika_inventory"
+}
+
+model akun {
+  id_akun  Int       @id @default(autoincrement())
+  username String    @unique @db.VarChar(25)
+  nama     String    @db.VarChar(100)
+  password String
+  role     String    @db.VarChar(10)
+  history  history[]
+}
+
+model history {
+  id_history   Int         @id @default(autoincrement())
+  userId       Int?
+  inventoryId  Int?
+  idPeminjaman Int? 
+  kondisi      String?     @db.Text
+  akun         akun?       @relation(fields: [userId], references: [id_akun], onDelete: Restrict, onUpdate: Restrict, map: "history_ibfk_1")
+  inventory    inventory?  @relation(fields: [inventoryId], references: [id_inventory], onDelete: Restrict, onUpdate: Restrict, map: "history_ibfk_2")
+  peminjaman   peminjaman? @relation(fields: [idPeminjaman], references: [id_peminjaman], onDelete: Restrict, onUpdate: Restrict, map: "history_ibfk_3")
+
+  @@index([idPeminjaman], map: "idPeminjaman")
+  @@index([inventoryId], map: "inventoryId")
+  @@index([userId], map: "userId")
+}
+
+model inventory {
+  id_inventory Int          @id @default(autoincrement())
+  nama         String       @db.VarChar(50)
+  gambar       String?
+  deskripsi    String?      @db.Text
+  kategori     String       @db.VarChar(15)
+  status       String?      @db.VarChar(50)
+  history      history[]
+  peminjaman   peminjaman[]
+}
+
+model peminjaman {
+  id_peminjaman Int        @id @default(autoincrement())
+  inventoryId   Int?
+  dateStart     String
+  dateEnd       String?
+  deskripsi     String?     @db.Text
+  status        Boolean
+  inStock       Int?
+  outStock      Boolean
+  history       history[]
+  inventory     inventory? @relation(fields: [inventoryId], references: [id_inventory], onDelete: Restrict, onUpdate: Restrict, map: "peminjaman_ibfk_1")
+
+  
+  @@index([inventoryId], map: "inventoryId")
+  
+  
+}
